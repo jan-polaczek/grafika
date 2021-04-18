@@ -39,16 +39,16 @@ class Scene:
 
     def draw(self):
         lines_2d, triangles_2d = self.camera.render()
-        for line in lines_2d:
-            if line.start is None or line.end is None:
-                continue
-            pygame.draw.line(self.screen, white, self.translate_to_global(line.start), self.translate_to_global(line.end))
-
         for triangle in triangles_2d:
             if triangle.a is None or triangle.b is None or triangle.c is None:
                 continue
             points = self.translate_to_global(triangle.a), self.translate_to_global(triangle.b), self.translate_to_global(triangle.c)
             pygame.draw.polygon(self.screen, triangle.color, points)
+
+        for line in lines_2d:
+            if line.start is None or line.end is None:
+                continue
+            pygame.draw.line(self.screen, white, self.translate_to_global(line.start), self.translate_to_global(line.end))
 
     def handle_event(self, event):
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:

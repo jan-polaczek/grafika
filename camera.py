@@ -52,9 +52,9 @@ class Camera:
         matrix_with_rotation = self.get_rotation_matrix()
 
         position_vector = np.array([
-            [-self.position.x],
-            [-self.position.y],
-            [-self.position.z]
+            [self.position.x],
+            [self.position.y],
+            [self.position.z]
         ])
 
         matrix = np.hstack((matrix_with_rotation, position_vector))
@@ -86,7 +86,7 @@ class Camera:
     def translate_point(self, point):
         point_arr = convert_point_to_array(point)
         point_2d_arr = self.get_matrix().dot(point_arr)
-        if point_2d_arr[2, 0] < 0:
+        if point_2d_arr[2, 0] <= 0.1:
             return None
         point_2d_arr = point_2d_arr * (self.f / point_2d_arr[2, 0])
         return point_2d_arr[0, 0] * 400, point_2d_arr[1, 0] * 400
@@ -95,29 +95,26 @@ class Camera:
         self.triangles.sort(reverse=True, key=self.compare_triangles)
 
     def compare_triangles(self, obj):
-        min_dist = min([calculate_distance_3d(vertex, self.absolute_position()) for vertex in obj.vertices])
-        return min_dist
-
-    def absolute_position(self):
-        return Point3D(-self.position.x, -self.position.y, -self.position.z)
+        dist = max([calculate_distance_3d(vertex, self.position) for vertex in obj.vertices])
+        return dist
 
     def pan_right(self):
-        self.pan_x(-1)
-
-    def pan_left(self):
         self.pan_x(1)
 
-    def pan_up(self):
-        self.pan_y(1)
+    def pan_left(self):
+        self.pan_x(-1)
 
-    def pan_down(self):
+    def pan_up(self):
         self.pan_y(-1)
 
+    def pan_down(self):
+        self.pan_y(1)
+
     def pan_forward(self):
-        self.pan_z(-1)
+        self.pan_z(1)
 
     def pan_backward(self):
-        self.pan_z(1)
+        self.pan_z(-1)
 
     def rotate_clockwise(self):
         self.rotate_z(1)
