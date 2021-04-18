@@ -1,5 +1,6 @@
 from point import Point3D
 from line import Line2D
+from triangle import Triangle2D
 import numpy as np
 import math
 
@@ -19,10 +20,15 @@ def convert_point_to_array(point):
     ])
 
 
+def calculate_distance_3d(point1, point2):
+    return ((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2 + (point1.z - point2.z) ** 2) ** 0.5
+
+
 class Camera:
-    def __init__(self, lines):
+    def __init__(self, lines, triangles):
         self.position = Point3D(0, 0, 0)
         self.lines = lines
+        self.triangles = triangles
         self.f = 2
         self.rotation = Point3D(0, 0, 0)
 
@@ -33,7 +39,14 @@ class Camera:
             end_2d = self.translate_point(line.end)
             line_2d = Line2D(start_2d, end_2d)
             lines_2d.append(line_2d)
-        return lines_2d
+
+        self.sort_triangles()
+        triangles_2d = []
+        for triangle in self.triangles:
+            vertices = [self.translate_point(vertex) for vertex in triangle.vertices]
+            triangle_2d = Triangle2D(vertices, triangle.color)
+            triangles_2d.append(triangle_2d)
+        return lines_2d, triangles_2d
 
     def get_matrix(self):
         matrix_with_rotation = self.get_rotation_matrix()
@@ -77,6 +90,16 @@ class Camera:
             return None
         point_2d_arr = point_2d_arr * (self.f / point_2d_arr[2, 0])
         return point_2d_arr[0, 0] * 400, point_2d_arr[1, 0] * 400
+
+    def sort_triangles(self):
+        self.triangles.sort(reverse=True, key=self.compare_triangles)
+
+    def compare_triangles(self, obj):
+        min_dist = min([calculate_distance_3d(vertex, self.absolute_position()) for vertex in obj.vertices])
+        return min_dist
+
+    def absolute_position(self):
+        return Point3D(-self.position.x, -self.position.y, -self.position.z)
 
     def pan_right(self):
         self.pan_x(-1)

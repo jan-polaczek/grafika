@@ -32,17 +32,17 @@ class TriangleParser:
 
         for line in lines[start:end]:
             vertices = line.split(';')
+            new_vertices = []
             for v in vertices:
-                v = [int(coordinate) for coordinate in v.split()]
-                v = Point3D(v[0], v[1], v[2])
+                vertex = [float(coordinate) for coordinate in v.split()]
+                new_vertices.append(Point3D(vertex[0], vertex[1], vertex[2]))
 
-            current_objects.append(Triangle3D(vertices))
+            current_objects.append(Triangle3D(new_vertices))
 
         color = tuple(int(value) for value in lines[end].split())
         
         for triangle in current_objects:
             triangle.color = color
-            print(triangle)
 
         self.objects.extend(current_objects)
 
