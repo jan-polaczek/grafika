@@ -10,7 +10,6 @@ class TriangleParser:
 
     def parse(self):
         with open(self.path, 'r') as file:
-            print('opened file')
             self.handle_file(file)
         return self.objects
 
