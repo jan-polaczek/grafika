@@ -14,7 +14,7 @@ class Scene:
         input_parser = InputParser(INPUT_PATH)
         lines = input_parser.parse()
         self.camera = Camera(lines)
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
         self.screen.fill(black)
         self.camera_transforms = self.set_camera_transforms()
         self.transforms_to_perform = self.set_transforms_to_perform()

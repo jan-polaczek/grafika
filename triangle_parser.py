@@ -10,6 +10,7 @@ class TriangleParser:
 
     def parse(self):
         with open(self.path, 'r') as file:
+            print('opened file')
             self.handle_file(file)
         return self.objects
 
@@ -18,8 +19,9 @@ class TriangleParser:
         all_lines = file_.readlines()
         while current_line < len(all_lines):
             if all_lines[current_line][0] == '#':
+                current_line += 1
                 continue
-            current_line = read_object_data(current_line, all_lines)
+            current_line = self.read_object_data(current_line, all_lines)
 
         return self.objects
 
@@ -37,7 +39,7 @@ class TriangleParser:
 
             current_objects.append(Triangle3D(vertices))
 
-        color = (int(value) for value in lines[end].split())
+        color = tuple(int(value) for value in lines[end].split())
         
         for triangle in current_objects:
             triangle.color = color
