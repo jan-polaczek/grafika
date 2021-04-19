@@ -1,8 +1,11 @@
 from point import Point3D
 from line import Line2D
-from triangle import Triangle2D
+from triangle import Triangle2D, Triangle3D
+from rectangle import Rectangle
+from functools import cmp_to_key
 import numpy as np
 import math
+
 
 PAN_STEP = 2
 ZOOM_STEP = 0.1
@@ -43,10 +46,8 @@ class Camera:
 
         self.sort_triangles()
         triangles_2d = []
-        for triangle in self.triangles:
-            vertices = [self.translate_point(vertex) for vertex in triangle.vertices]
-            triangle_2d = Triangle2D(vertices, triangle.color)
-            triangles_2d.append(triangle_2d)
+        for t in self.triangles:
+            triangles_2d.append(t.projection)
         return lines_2d, triangles_2d
 
     def get_matrix(self):
@@ -93,11 +94,47 @@ class Camera:
         return point_2d_arr[0, 0] * 400, point_2d_arr[1, 0] * 400
 
     def sort_triangles(self):
-        self.triangles.sort(reverse=True, key=self.compare_triangles)
+        for t in self.triangles:
+            vertices = [self.translate_point(vertex) for vertex in t.vertices]
+            t.projection = Triangle2D(vertices, t.color)
+            # added because of null pointer problems when to close to an object
+            for v in vertices:
+                if not v:
+                    t.projection = None
+            
+        count = len(self.triangles)
+        t = self.triangles
+        for i in range(count):
+            for j in range(i+1, count):
+                res = self.compare_triangles(t[i], t[j])
+                if res == 1:
+                    tmp = t[i]
+                    t[i] = t[j]
+                    t[j] = tmp 
+                
+        # min_max_compare = cmp_to_key(self.compare_triangles)
+        # self.triangles.sort(key=min_max_compare)
 
-    def compare_triangles(self, obj):
-        dist = max([calculate_distance_3d(vertex, self.position) for vertex in obj.vertices])
-        return dist
+    def compare_triangles(self, t1, t2):
+        if not t1.projection or not t2.projection:
+            return 0
+
+        r1 = Rectangle(t1.projection)
+        r2 = Rectangle(t2.projection)
+
+        if not r1.does_overlap(r2):
+            return 0
+
+        dist_t1 = max([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
+        dist_t2 = max([calculate_distance_3d(vertex, self.position) for vertex in t2.vertices])
+
+        if dist_t1 > dist_t2:
+            return -1
+
+        if dist_t1 < dist_t2:
+            return 1
+
+        return 0
 
     def pan_right(self):
         self.pan_x(1)
