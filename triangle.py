@@ -4,8 +4,8 @@ class Triangle3D:
         self.vertices = points
         self.color = color
         
-    def __repr__(self):
-        return f'A: {self.vertices[0]} B: {self.vertices[1]} C: {self.vertices[2]} color: {self.color}'
+    def __str__(self):
+        return str(self.vertices[0]) + '; ' + str(self.vertices[1]) + '; ' + str(self.vertices[2])
 
 
 class Triangle2D:
