@@ -33,7 +33,6 @@ class Camera:
         self.rotation = Point3D(0, 0, 0)
 
     def render(self):
-
         lines_2d = []
         if self.lines:
             for line in self.lines:
