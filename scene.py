@@ -16,7 +16,7 @@ class Scene:
         input_parser2 = InputParser('lines.txt')
         triangles = input_parser.parse()
         lines = input_parser2.parse()
-        self.camera = Camera(lines, triangles)
+        self.camera = Camera(triangles)
         self.screen = pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
         self.screen.fill(black)
         self.camera_transforms = self.set_camera_transforms()

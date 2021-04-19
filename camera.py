@@ -25,7 +25,7 @@ def calculate_distance_3d(point1, point2):
 
 
 class Camera:
-    def __init__(self, lines, triangles):
+    def __init__(self, triangles, lines=None):
         self.position = Point3D(0, 0, 0)
         self.lines = lines
         self.triangles = triangles
@@ -33,12 +33,14 @@ class Camera:
         self.rotation = Point3D(0, 0, 0)
 
     def render(self):
+
         lines_2d = []
-        for line in self.lines:
-            start_2d = self.translate_point(line.start)
-            end_2d = self.translate_point(line.end)
-            line_2d = Line2D(start_2d, end_2d)
-            lines_2d.append(line_2d)
+        if self.lines:
+            for line in self.lines:
+                start_2d = self.translate_point(line.start)
+                end_2d = self.translate_point(line.end)
+                line_2d = Line2D(start_2d, end_2d)
+                lines_2d.append(line_2d)
 
         self.sort_triangles()
         triangles_2d = []
