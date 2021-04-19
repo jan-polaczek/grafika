@@ -1,5 +1,6 @@
 from point import Point3D
 from line import Line2D
+from triangle import Triangle2D
 import numpy as np
 import math
 
@@ -19,29 +20,42 @@ def convert_point_to_array(point):
     ])
 
 
+def calculate_distance_3d(point1, point2):
+    return ((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2 + (point1.z - point2.z) ** 2) ** 0.5
+
+
 class Camera:
-    def __init__(self, lines):
+    def __init__(self, triangles, lines=None):
         self.position = Point3D(0, 0, 0)
         self.lines = lines
+        self.triangles = triangles
         self.f = 2
         self.rotation = Point3D(0, 0, 0)
 
     def render(self):
         lines_2d = []
-        for line in self.lines:
-            start_2d = self.translate_point(line.start)
-            end_2d = self.translate_point(line.end)
-            line_2d = Line2D(start_2d, end_2d)
-            lines_2d.append(line_2d)
-        return lines_2d
+        if self.lines:
+            for line in self.lines:
+                start_2d = self.translate_point(line.start)
+                end_2d = self.translate_point(line.end)
+                line_2d = Line2D(start_2d, end_2d)
+                lines_2d.append(line_2d)
+
+        self.sort_triangles()
+        triangles_2d = []
+        for triangle in self.triangles:
+            vertices = [self.translate_point(vertex) for vertex in triangle.vertices]
+            triangle_2d = Triangle2D(vertices, triangle.color)
+            triangles_2d.append(triangle_2d)
+        return lines_2d, triangles_2d
 
     def get_matrix(self):
         matrix_with_rotation = self.get_rotation_matrix()
 
         position_vector = np.array([
-            [-self.position.x],
-            [-self.position.y],
-            [-self.position.z]
+            [self.position.x],
+            [self.position.y],
+            [self.position.z]
         ])
 
         matrix = np.hstack((matrix_with_rotation, position_vector))
@@ -73,28 +87,35 @@ class Camera:
     def translate_point(self, point):
         point_arr = convert_point_to_array(point)
         point_2d_arr = self.get_matrix().dot(point_arr)
-        if point_2d_arr[2, 0] < 0:
+        if point_2d_arr[2, 0] <= 0.1:
             return None
         point_2d_arr = point_2d_arr * (self.f / point_2d_arr[2, 0])
         return point_2d_arr[0, 0] * 400, point_2d_arr[1, 0] * 400
 
-    def pan_right(self):
-        self.pan_x(-1)
+    def sort_triangles(self):
+        self.triangles.sort(reverse=True, key=self.compare_triangles)
 
-    def pan_left(self):
+    def compare_triangles(self, obj):
+        dist = max([calculate_distance_3d(vertex, self.position) for vertex in obj.vertices])
+        return dist
+
+    def pan_right(self):
         self.pan_x(1)
 
-    def pan_up(self):
-        self.pan_y(1)
+    def pan_left(self):
+        self.pan_x(-1)
 
-    def pan_down(self):
+    def pan_up(self):
         self.pan_y(-1)
 
+    def pan_down(self):
+        self.pan_y(1)
+
     def pan_forward(self):
-        self.pan_z(-1)
+        self.pan_z(1)
 
     def pan_backward(self):
-        self.pan_z(1)
+        self.pan_z(-1)
 
     def rotate_clockwise(self):
         self.rotate_z(1)

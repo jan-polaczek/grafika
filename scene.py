@@ -1,8 +1,9 @@
 import sys, pygame
 from camera import Camera
+from triangle_parser import TriangleParser
 from input_parser import InputParser
 
-INPUT_PATH = 'lines.txt'
+INPUT_PATH = 'triangles.txt'
 FPS = 30
 black = 0, 0, 0
 white = 255, 255, 255
@@ -11,10 +12,12 @@ pygame.init()
 
 class Scene:
     def __init__(self):
-        input_parser = InputParser(INPUT_PATH)
-        lines = input_parser.parse()
-        self.camera = Camera(lines)
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        input_parser = TriangleParser(INPUT_PATH)
+        input_parser2 = InputParser('lines.txt')
+        triangles = input_parser.parse()
+        lines = input_parser2.parse()
+        self.camera = Camera(triangles)
+        self.screen = pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
         self.screen.fill(black)
         self.camera_transforms = self.set_camera_transforms()
         self.transforms_to_perform = self.set_transforms_to_perform()
@@ -27,12 +30,22 @@ class Scene:
         for event in pygame.event.get():
             self.handle_event(event)
         self.perform_transforms()
-        self.draw_lines()
+        self.draw()
         pygame.display.update()
         self.clock.tick(FPS)
 
-    def draw_lines(self):
-        lines_2d = self.camera.render()
+    def draw_triangle(self, triangle):
+        if triangle.a is None or triangle.b is None or triangle.c is None:
+            return False
+        points = self.translate_to_global(triangle.a), self.translate_to_global(triangle.b), self.translate_to_global(triangle.c)
+        pygame.draw.polygon(self.screen, triangle.color, points)
+        return True
+
+    def draw(self):
+        lines_2d, triangles_2d = self.camera.render()
+        for triangle in triangles_2d:
+            self.draw_triangle(triangle)
+
         for line in lines_2d:
             if line.start is None or line.end is None:
                 continue
