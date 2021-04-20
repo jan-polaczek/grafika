@@ -101,17 +101,7 @@ class Camera:
             for v in vertices:
                 if not v:
                     t.projection = None
-            
-        # count = len(self.triangles)
-        # t = self.triangles
-        # for i in range(count):
-        #     for j in range(i+1, count):
-        #         res = self.compare_triangles(t[i], t[j])
-        #         if res == 1:
-        #             tmp = t[i]
-        #             t[i] = t[j]
-        #             t[j] = tmp 
-                
+                  
         min_max_compare = cmp_to_key(self.compare_triangles)
         self.triangles.sort(key=min_max_compare)
 
@@ -130,17 +120,13 @@ class Camera:
         dist_t2_max = max([calculate_distance_3d(vertex, self.position) for vertex in t2.vertices])
         dist_t2_min = min([calculate_distance_3d(vertex, self.position) for vertex in t2.vertices])
 
-        if dist_t1_min > dist_t2_max:
+        if dist_t1_max > dist_t2_max and dist_t1_min > dist_t2_min:
             return -1
-        elif dist_t2_min > dist_t1_max:
+        if dist_t2_max > dist_t1_max and dist_t2_min > dist_t1_min:
             return 1
-        elif dist_t1_max > dist_t2_min and dist_t2_max > dist_t1_max:
-            return 1
-        elif dist_t2_max > dist_t1_min and dist_t1_max > dist_t2_max:
+        if dist_t1_min >= dist_t2_min and dist_t1_max <= dist_t2_max:
             return -1
-        elif dist_t1_min >= dist_t2_min and dist_t1_max <= dist_t2_max:
-            return -1
-        elif dist_t2_min >= dist_t1_min and dist_t2_max <= dist_t1_max:
+        if dist_t2_min >= dist_t1_min and dist_t2_max <= dist_t1_max:
             return 1
 
         return 0
