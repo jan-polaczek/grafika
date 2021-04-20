@@ -24,7 +24,7 @@ def convert_point_to_array(point):
 
 
 def calculate_distance_3d(point1, point2):
-    return ((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2 + (point1.z - point2.z) ** 2) ** 0.5
+    return ((point1.x - point2.x) ** 2.0 + (point1.y - point2.y) ** 2.0 + (point1.z - point2.z) ** 2.0) ** 0.5
 
 
 class Camera:
@@ -34,8 +34,10 @@ class Camera:
         self.triangles = triangles
         self.f = 2
         self.rotation = Point3D(0, 0, 0)
+        self.matrix = None
 
     def render(self):
+        self.matrix = self.get_matrix()
         lines_2d = []
         if self.lines:
             for line in self.lines:
@@ -87,8 +89,8 @@ class Camera:
 
     def translate_point(self, point):
         point_arr = convert_point_to_array(point)
-        point_2d_arr = self.get_matrix().dot(point_arr)
-        if point_2d_arr[2, 0] <= 0.1:
+        point_2d_arr = self.matrix.dot(point_arr)
+        if point_2d_arr[2, 0] <= 5:
             return None
         point_2d_arr = point_2d_arr * (self.f / point_2d_arr[2, 0])
         return point_2d_arr[0, 0] * 400, point_2d_arr[1, 0] * 400
@@ -106,14 +108,14 @@ class Camera:
         self.triangles.sort(key=min_max_compare)
 
     def compare_triangles(self, t1, t2):
-        # if not t1.projection or not t2.projection:
-        #     return 0
+        if not t1.projection or not t2.projection:
+            return 0
 
-        # r1 = Rectangle(t1.projection)
-        # r2 = Rectangle(t2.projection)
+        #r1 = Rectangle(t1.projection)
+        #r2 = Rectangle(t2.projection)
 
-        # if not r1.does_overlap(r2):
-        #     return 0
+        #if not r1.does_overlap(r2):
+        #    return 0
 
         dist_t1_max = max([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
         dist_t1_min = min([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
@@ -130,7 +132,6 @@ class Camera:
             return 1
 
         return 0
-
 
     def pan_right(self):
         self.pan_x(1)
