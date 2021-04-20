@@ -17,7 +17,7 @@ class TriangleParser:
         current_line = 0
         all_lines = file_.readlines()
         while current_line < len(all_lines):
-            if all_lines[current_line][0] == '#':
+            if all_lines[current_line][0] == '#' or all_lines[current_line] == '\n':
                 current_line += 1
                 continue
             current_line = self.read_object_data(current_line, all_lines)

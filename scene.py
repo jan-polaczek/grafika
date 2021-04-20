@@ -4,7 +4,7 @@ from triangle_parser import TriangleParser
 from input_parser import InputParser
 
 INPUT_PATH = 'triangles.txt'
-FPS = 30
+FPS = 60
 black = 0, 0, 0
 white = 255, 255, 255
 pygame.init()
@@ -35,7 +35,7 @@ class Scene:
         self.clock.tick(FPS)
 
     def draw_triangle(self, triangle):
-        if triangle.a is None or triangle.b is None or triangle.c is None:
+        if not triangle or triangle.a is None or triangle.b is None or triangle.c is None:
             return False
         points = self.translate_to_global(triangle.a), self.translate_to_global(triangle.b), self.translate_to_global(triangle.c)
         pygame.draw.polygon(self.screen, triangle.color, points)
