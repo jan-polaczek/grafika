@@ -102,39 +102,49 @@ class Camera:
                 if not v:
                     t.projection = None
             
-        count = len(self.triangles)
-        t = self.triangles
-        for i in range(count):
-            for j in range(i+1, count):
-                res = self.compare_triangles(t[i], t[j])
-                if res == 1:
-                    tmp = t[i]
-                    t[i] = t[j]
-                    t[j] = tmp 
+        # count = len(self.triangles)
+        # t = self.triangles
+        # for i in range(count):
+        #     for j in range(i+1, count):
+        #         res = self.compare_triangles(t[i], t[j])
+        #         if res == 1:
+        #             tmp = t[i]
+        #             t[i] = t[j]
+        #             t[j] = tmp 
                 
-        # min_max_compare = cmp_to_key(self.compare_triangles)
-        # self.triangles.sort(key=min_max_compare)
+        min_max_compare = cmp_to_key(self.compare_triangles)
+        self.triangles.sort(key=min_max_compare)
 
     def compare_triangles(self, t1, t2):
-        if not t1.projection or not t2.projection:
-            return 0
+        # if not t1.projection or not t2.projection:
+        #     return 0
 
-        r1 = Rectangle(t1.projection)
-        r2 = Rectangle(t2.projection)
+        # r1 = Rectangle(t1.projection)
+        # r2 = Rectangle(t2.projection)
 
-        if not r1.does_overlap(r2):
-            return 0
+        # if not r1.does_overlap(r2):
+        #     return 0
 
-        dist_t1 = max([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
-        dist_t2 = max([calculate_distance_3d(vertex, self.position) for vertex in t2.vertices])
+        dist_t1_max = max([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
+        dist_t1_min = min([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
+        dist_t2_max = max([calculate_distance_3d(vertex, self.position) for vertex in t2.vertices])
+        dist_t2_min = min([calculate_distance_3d(vertex, self.position) for vertex in t2.vertices])
 
-        if dist_t1 > dist_t2:
+        if dist_t1_min > dist_t2_max:
             return -1
-
-        if dist_t1 < dist_t2:
+        elif dist_t2_min > dist_t1_max:
+            return 1
+        elif dist_t1_max > dist_t2_min and dist_t2_max > dist_t1_max:
+            return 1
+        elif dist_t2_max > dist_t1_min and dist_t1_max > dist_t2_max:
+            return -1
+        elif dist_t1_min >= dist_t2_min and dist_t1_max <= dist_t2_max:
+            return -1
+        elif dist_t2_min >= dist_t1_min and dist_t2_max <= dist_t1_max:
             return 1
 
         return 0
+
 
     def pan_right(self):
         self.pan_x(1)

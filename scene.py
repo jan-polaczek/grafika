@@ -4,7 +4,7 @@ from triangle_parser import TriangleParser
 from input_parser import InputParser
 
 INPUT_PATH = 'triangles.txt'
-FPS = 30
+FPS = 60
 black = 0, 0, 0
 white = 255, 255, 255
 pygame.init()
