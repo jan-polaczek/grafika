@@ -111,10 +111,10 @@ class Camera:
         if not t1.projection or not t2.projection:
             return 0
 
-        #r1 = Rectangle(t1.projection)
-        #r2 = Rectangle(t2.projection)
+        # r1 = Rectangle(t1.projection)
+        # r2 = Rectangle(t2.projection)
 
-        #if not r1.does_overlap(r2):
+        # if not r1.does_overlap(r2):
         #    return 0
 
         dist_t1_max = max([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
