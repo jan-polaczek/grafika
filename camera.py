@@ -2,6 +2,7 @@ from point import Point3D
 from line import Line2D
 from triangle import Triangle2D, Triangle3D
 from rectangle import Rectangle
+from ray_caster import RayCaster
 from functools import cmp_to_key
 import numpy as np
 import math
@@ -11,7 +12,7 @@ PAN_STEP = 2
 ZOOM_STEP = 0.1
 MIN_F = 0.1
 ROTATION_STEP = 0.03
-MOUSE_ROTATION_SLOWDOWN = 0.03
+MOUSE_ROTATION_SLOWDOWN = 0.3
 
 
 def convert_point_to_array(point):
@@ -28,29 +29,29 @@ def calculate_distance_3d(point1, point2):
 
 
 class Camera:
-    def __init__(self, triangles, lines=None):
+    def __init__(self, screen_dimensions, spheres, triangles=None, lines=None):
         self.position = Point3D(0, 0, 0)
         self.lines = lines
         self.triangles = triangles
+        self.spheres = spheres
         self.f = 2
         self.rotation = Point3D(0, 0, 0)
         self.matrix = None
+        self.ray_caster = RayCaster(self.position, self.rotation, self.spheres, screen_dimensions)
 
     def render(self):
         self.matrix = self.get_matrix()
-        lines_2d = []
-        if self.lines:
-            for line in self.lines:
-                start_2d = self.translate_point(line.start)
-                end_2d = self.translate_point(line.end)
-                line_2d = Line2D(start_2d, end_2d)
-                lines_2d.append(line_2d)
+        points_3d = self.ray_caster.scan()
+        points_2d = []
+        for point3d in points_3d:
+            point_2d = self.translate_point_from_raycast(point3d)
+            points_2d.append(point_2d)
+        return points_2d
 
-        self.sort_triangles()
-        triangles_2d = []
-        for t in self.triangles:
-            triangles_2d.append(t.projection)
-        return lines_2d, triangles_2d
+    def translate_point_from_raycast(self, point3d):
+        pixel, (point, sphere) = point3d
+        color = sphere.color
+        return (pixel.x, pixel.y), color
 
     def get_matrix(self):
         matrix_with_rotation = self.get_rotation_matrix()
@@ -134,16 +135,16 @@ class Camera:
         return 0
 
     def pan_right(self):
-        self.pan_x(1)
-
-    def pan_left(self):
         self.pan_x(-1)
 
+    def pan_left(self):
+        self.pan_x(1)
+
     def pan_up(self):
-        self.pan_y(-1)
+        self.pan_y(1)
 
     def pan_down(self):
-        self.pan_y(1)
+        self.pan_y(-1)
 
     def pan_forward(self):
         self.pan_z(1)

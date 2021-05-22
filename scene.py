@@ -6,6 +6,7 @@ INPUT_PATH = 'spheres.txt'
 FPS = 60
 black = 0, 0, 0
 white = 255, 255, 255
+screen_size = 160, 120
 pygame.init()
 
 
@@ -13,8 +14,8 @@ class Scene:
     def __init__(self):
         input_parser = SphereParser(INPUT_PATH)
         spheres = input_parser.parse()
-        self.camera = Camera(spheres)
-        self.screen = pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
+        self.camera = Camera(screen_size, spheres)
+        self.screen = pygame.display.set_mode(screen_size, pygame.SCALED)
         self.screen.fill(black)
         self.camera_transforms = self.set_camera_transforms()
         self.transforms_to_perform = self.set_transforms_to_perform()
@@ -31,22 +32,12 @@ class Scene:
         pygame.display.update()
         self.clock.tick(FPS)
 
-    def draw_triangle(self, triangle):
-        if not triangle or triangle.a is None or triangle.b is None or triangle.c is None:
-            return False
-        points = self.translate_to_global(triangle.a), self.translate_to_global(triangle.b), self.translate_to_global(triangle.c)
-        pygame.draw.polygon(self.screen, triangle.color, points)
-        return True
-
     def draw(self):
-        lines_2d, triangles_2d = self.camera.render()
-        for triangle in triangles_2d:
-            self.draw_triangle(triangle)
-
-        for line in lines_2d:
-            if line.start is None or line.end is None:
-                continue
-            pygame.draw.line(self.screen, white, self.translate_to_global(line.start), self.translate_to_global(line.end))
+        points = self.camera.render()
+        for point_color in points:
+            point, color = point_color
+            point = self.translate_to_global(point)
+            self.screen.set_at(point, color)
 
     def handle_event(self, event):
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -98,5 +89,5 @@ class Scene:
         return {key: False for key in self.set_camera_transforms().keys()}
 
     def translate_to_global(self, point):
-        return point[0] + self.screen.get_size()[0] / 2, point[1] + self.screen.get_size()[1] / 2
+        return int(point[0] + self.screen.get_size()[0] / 2), int(point[1] + self.screen.get_size()[1] / 2)
 
