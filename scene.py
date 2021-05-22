@@ -1,9 +1,8 @@
 import sys, pygame
 from camera import Camera
-from triangle_parser import TriangleParser
-from input_parser import InputParser
+from sphere_parser import SphereParser
 
-INPUT_PATH = 'triangles.txt'
+INPUT_PATH = 'spheres.txt'
 FPS = 60
 black = 0, 0, 0
 white = 255, 255, 255
@@ -12,11 +11,9 @@ pygame.init()
 
 class Scene:
     def __init__(self):
-        input_parser = TriangleParser(INPUT_PATH)
-        input_parser2 = InputParser('lines.txt')
-        triangles = input_parser.parse()
-        lines = input_parser2.parse()
-        self.camera = Camera(triangles)
+        input_parser = SphereParser(INPUT_PATH)
+        spheres = input_parser.parse()
+        self.camera = Camera(spheres)
         self.screen = pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
         self.screen.fill(black)
         self.camera_transforms = self.set_camera_transforms()
