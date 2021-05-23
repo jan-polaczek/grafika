@@ -6,20 +6,21 @@ INPUT_PATH = 'spheres.txt'
 FPS = 60
 black = 0, 0, 0
 white = 255, 255, 255
-screen_size = 160, 120
+screen_size = 640, 480
 pygame.init()
 
 
 class Scene:
     def __init__(self):
         input_parser = SphereParser(INPUT_PATH)
-        spheres = input_parser.parse()
-        self.camera = Camera(screen_size, spheres)
+        spheres, light_sources = input_parser.parse()
+        self.camera = Camera(screen_size, spheres, light_sources)
         self.screen = pygame.display.set_mode(screen_size, pygame.SCALED)
         self.screen.fill(black)
         self.camera_transforms = self.set_camera_transforms()
         self.transforms_to_perform = self.set_transforms_to_perform()
         self.clock = pygame.time.Clock()
+        self.points = self.camera.render()
         pygame.mouse.set_visible(False)
 
     def run(self):
@@ -27,14 +28,11 @@ class Scene:
         self.screen.fill(black)
         for event in pygame.event.get():
             self.handle_event(event)
-        self.perform_transforms()
         self.draw()
         pygame.display.update()
-        self.clock.tick(FPS)
 
     def draw(self):
-        points = self.camera.render()
-        for point_color in points:
+        for point_color in self.points:
             point, color = point_color
             point = self.translate_to_global(point)
             self.screen.set_at(point, color)
@@ -44,8 +42,6 @@ class Scene:
             sys.exit()
         if event.type == pygame.KEYDOWN:
             self.handle_keydown(event.key)
-        if event.type == pygame.KEYUP:
-            self.handle_keyup(event.key)
         if event.type == pygame.MOUSEWHEEL:
             self.handle_mousewheel(event.y)
         if event.type == pygame.MOUSEMOTION:
@@ -53,12 +49,8 @@ class Scene:
         self.screen.fill(black)
 
     def handle_keydown(self, key):
-        if key in self.transforms_to_perform:
-            self.transforms_to_perform[key] = True
-
-    def handle_keyup(self, key):
-        if key in self.transforms_to_perform:
-            self.transforms_to_perform[key] = False
+        self.camera_transforms[key]()
+        self.points = self.camera.render()
 
     def handle_mousewheel(self, amount):
         self.camera.zoom(amount)
@@ -89,5 +81,5 @@ class Scene:
         return {key: False for key in self.set_camera_transforms().keys()}
 
     def translate_to_global(self, point):
-        return int(point[0] + self.screen.get_size()[0] / 2), int(point[1] + self.screen.get_size()[1] / 2)
+        return int(point[0] + screen_size[0] / 2), int(point[1] + screen_size[1] / 2)
 

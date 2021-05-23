@@ -8,7 +8,7 @@ import numpy as np
 import math
 
 
-PAN_STEP = 2
+PAN_STEP = 5
 ZOOM_STEP = 0.1
 MIN_F = 0.1
 ROTATION_STEP = 0.03
@@ -29,11 +29,12 @@ def calculate_distance_3d(point1, point2):
 
 
 class Camera:
-    def __init__(self, screen_dimensions, spheres, triangles=None, lines=None):
+    def __init__(self, screen_dimensions, spheres, light_sources, triangles=None, lines=None):
         self.position = Point3D(0, 0, 0)
         self.lines = lines
         self.triangles = triangles
         self.spheres = spheres
+        self.light_sources = light_sources
         self.f = 2
         self.rotation = Point3D(0, 0, 0)
         self.matrix = None
@@ -51,7 +52,7 @@ class Camera:
     def translate_point_from_raycast(self, point3d):
         pixel, (point, sphere) = point3d
         color = sphere.color
-        return (pixel.x, pixel.y), color
+        return (pixel[0], pixel[1]), color
 
     def get_matrix(self):
         matrix_with_rotation = self.get_rotation_matrix()
