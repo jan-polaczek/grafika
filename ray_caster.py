@@ -61,7 +61,10 @@ class RayCaster:
         t = (-b - discriminant ** 0.5) / (2 * a)
         if t > 0:
             return False
-        return t, 0, 0, 0
+        x = origin[0] + t * direction[0]
+        y = origin[1] + t * direction[1]
+        z = origin[2] + t * direction[2]
+        return t, x, y, z   # x, y, z to współrzędne punktu przecięcia promienia i sfery, na razie ich nie używam, ale będą potrzebne do phonga
 
     @staticmethod
     def calculate_discriminant(direction, oc, c):
