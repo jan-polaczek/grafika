@@ -1,0 +1,29 @@
+# spheres
+#-60 0 50; 20; 0 0 255
+#0 0 50; 20; 50 255 0
+#60 0 50; 20; 255 100 0
+Sphere:
+    center: -60 0 50
+    radius: 20
+    specular: 255 255 255
+    diffuse: 0 0 255
+    ambient: 0 0 255
+    alpha: 2
+    end
+
+Sphere:
+    center: 0 0 50
+    radius: 20
+    specular: 255 255 255
+    diffuse: 50 255 0
+    ambient: 50 255 0
+    alpha: 5
+    end
+
+Light Source:
+    center: 0 0 0
+    specular: 255 255 255
+    diffuse: 255 255 255
+    ambient: 255 255 255
+    end
+end
