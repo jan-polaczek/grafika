@@ -21,7 +21,7 @@ class RayCaster:
         self.camera_rotation = camera_rotation
         self.spheres = spheres
         self.screen_dimensions = screen_dimensions
-        self.z = camera_position.z + 30
+        self.z = 40
         self.origin = None
         self.oc_list = []
         self.c_list = []
@@ -57,7 +57,7 @@ class RayCaster:
 
     def cast_ray(self, pixel: np.array, oc: np.array, c: np.array) -> Union[bool, Tuple[float, float, float, float]]:
         origin = self.origin
-        direction = normalize(pixel - origin)
+        direction = pixel - origin
 
         a, b, discriminant = self.calculate_discriminant(direction, oc, c)
         if discriminant < 0:
@@ -72,6 +72,6 @@ class RayCaster:
 
     @staticmethod
     def calculate_discriminant(direction, oc, c):
-        a = 1
+        a = direction.dot(direction)
         b = 2 * direction.dot(oc)
         return a, b, b ** 2 - 4 * a * c

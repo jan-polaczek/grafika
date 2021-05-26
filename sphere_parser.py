@@ -8,7 +8,6 @@ class SphereParser:
         self.path = path
         self.spheres = []
         self.light_source = None
-        self.current_object = None
 
     def parse(self):
         with open(self.path, 'r') as file:
@@ -17,7 +16,7 @@ class SphereParser:
 
     def handle_file(self, file):
         line = file.readline()
-        while line != 'end':
+        while 'end' not in line:
             self.handle_line(line, file)
             line = file.readline()
 
@@ -38,7 +37,6 @@ class SphereParser:
             self.handle_sphere_line(line, attrs)
             line = file.readline()
         sphere = Sphere(**attrs)
-        print(attrs)
         self.spheres.append(sphere)
 
     def handle_light_source(self, file):

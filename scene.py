@@ -5,7 +5,7 @@ from sphere_parser import SphereParser
 INPUT_PATH = 'spheres.txt'
 black = 0, 0, 0
 white = 255, 255, 255
-screen_size = 320, 240
+screen_size = 640, 480
 pygame.init()
 
 
