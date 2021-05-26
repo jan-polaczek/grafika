@@ -11,13 +11,17 @@ https://github.com/xhacker/raycast/tree/master/raycast
 '''
 
 
+def normalize(v: np.array):
+    return v / np.linalg.norm(v)
+
+
 class RayCaster:
     def __init__(self, camera_position: Point3D, camera_rotation: Point3D, spheres: List[Sphere], screen_dimensions: Tuple[int, int]):
         self.camera_position = camera_position
         self.camera_rotation = camera_rotation
         self.spheres = spheres
         self.screen_dimensions = screen_dimensions
-        self.z = -20
+        self.z = 30
         self.origin = None
         self.oc_list = []
         self.c_list = []
@@ -30,7 +34,7 @@ class RayCaster:
         self.origin = self.camera_position.to_np()
         self.oc_list = [self.origin - sphere.center.to_np() for sphere in self.spheres]
 
-        self.c_list = [(self.origin - sphere.center.to_np()).dot(self.origin - sphere.center.to_np()) - sphere.radius ** 2 for sphere in self.spheres]
+        self.c_list = [oc.dot(oc) - sphere.radius ** 2 for oc, sphere in zip(self.oc_list, self.spheres)]
 
         for pixel in self.pixels:
             partial_result = self.cast_rays_per_pixel(pixel)
@@ -38,7 +42,7 @@ class RayCaster:
                 result.append((pixel, partial_result))
         return result
 
-    def cast_rays_per_pixel(self, pixel: np.array) -> Tuple[Point3D, Sphere]:
+    def cast_rays_per_pixel(self, pixel: np.array) -> Tuple[np.array, Sphere]:
         t = -1
         result = False
         for i, sphere in enumerate(self.spheres):
@@ -46,25 +50,25 @@ class RayCaster:
             if not ray_cast:
                 continue
             new_t, x, y, z = ray_cast
-            if new_t > t or t == -1:
-                result = Point3D(x, y, z), sphere
+            if new_t < t or t == -1:
+                result = np.array([x, y, z]), sphere
                 t = new_t
         return result
 
     def cast_ray(self, pixel: np.array, oc: np.array, c: np.array) -> Union[bool, Tuple[float, float, float, float]]:
         origin = self.origin
-        direction = pixel - origin  # tutaj uwzlęgnilibyśmy rotację
+        direction = pixel - origin
 
         a, b, discriminant = self.calculate_discriminant(direction, oc, c)
         if discriminant < 0:
             return False
         t = (-b - discriminant ** 0.5) / (2 * a)
-        if t > 0:
+        if t < 0:
             return False
         x = origin[0] + t * direction[0]
         y = origin[1] + t * direction[1]
         z = origin[2] + t * direction[2]
-        return t, x, y, z   # x, y, z to współrzędne punktu przecięcia promienia i sfery, na razie ich nie używam, ale będą potrzebne do phonga
+        return t, x, y, z
 
     @staticmethod
     def calculate_discriminant(direction, oc, c):

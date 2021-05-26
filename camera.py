@@ -1,14 +1,12 @@
 from point import Point3D
-from line import Line2D
-from triangle import Triangle2D, Triangle3D
-from rectangle import Rectangle
 from ray_caster import RayCaster
 from functools import cmp_to_key
+from phong import Phong
 import numpy as np
 import math
 
 
-PAN_STEP = 5
+PAN_STEP = 10
 ZOOM_STEP = 0.1
 MIN_F = 0.1
 ROTATION_STEP = 0.03
@@ -29,129 +27,55 @@ def calculate_distance_3d(point1, point2):
 
 
 class Camera:
-    def __init__(self, screen_dimensions, spheres, light_sources, triangles=None, lines=None):
+    def __init__(self, screen_dimensions, spheres, light_source, triangles=None, lines=None):
         self.position = Point3D(0, 0, 0)
         self.lines = lines
         self.triangles = triangles
         self.spheres = spheres
-        self.light_sources = light_sources
+        self.light_source = light_source
         self.f = 2
         self.rotation = Point3D(0, 0, 0)
         self.matrix = None
         self.ray_caster = RayCaster(self.position, self.rotation, self.spheres, screen_dimensions)
+        self.phong = Phong(light_source, self.position)
+        self.points_3d = self.ray_caster.scan()
 
     def render(self):
-        self.matrix = self.get_matrix()
-        points_3d = self.ray_caster.scan()
         points_2d = []
-        for point3d in points_3d:
+        self.phong.set_pos_np()
+        for point3d in self.points_3d:
             point_2d = self.translate_point_from_raycast(point3d)
             points_2d.append(point_2d)
+        print(self.light_source.center)
         return points_2d
 
     def translate_point_from_raycast(self, point3d):
         pixel, (point, sphere) = point3d
-        color = sphere.color
+        sphere_color = sphere.color
+        k_s = sphere_color
+        k_d = sphere_color
+        k_a = sphere_color
+        alpha = 5
+        color = self.phong.apply_phong(point, k_s, k_d, k_a, alpha, sphere)
         return (pixel[0], pixel[1]), color
 
-    def get_matrix(self):
-        matrix_with_rotation = self.get_rotation_matrix()
-
-        position_vector = np.array([
-            [self.position.x],
-            [self.position.y],
-            [self.position.z]
-        ])
-
-        matrix = np.hstack((matrix_with_rotation, position_vector))
-        matrix = np.vstack((matrix, np.array([0, 0, 0, 1])))
-        matrix = np.linalg.inv(matrix)
-        return matrix
-
-    def get_rotation_matrix(self):
-        z_rotation = np.array([
-            [math.cos(self.rotation.z), -math.sin(self.rotation.z), 0],
-            [math.sin(self.rotation.z), math.cos(self.rotation.z), 0],
-            [0, 0, 1]
-        ])
-
-        y_rotation = np.array([
-            [math.cos(self.rotation.y), 0, math.sin(self.rotation.y)],
-            [0, 1, 0],
-            [-math.sin(self.rotation.y), 0, math.cos(self.rotation.y)]
-        ])
-        x_rotation = np.array([
-            [1, 0, 0],
-            [0, math.cos(self.rotation.x), -math.sin(self.rotation.x)],
-            [0, math.sin(self.rotation.x), math.cos(self.rotation.x)]
-        ])
-
-        rotation_matrix = z_rotation.dot(y_rotation.dot(x_rotation))
-        return rotation_matrix
-
-    def translate_point(self, point):
-        point_arr = convert_point_to_array(point)
-        point_2d_arr = self.matrix.dot(point_arr)
-        if point_2d_arr[2, 0] <= 5:
-            return None
-        point_2d_arr = point_2d_arr * (self.f / point_2d_arr[2, 0])
-        return point_2d_arr[0, 0] * 400, point_2d_arr[1, 0] * 400
-
-    def sort_triangles(self):
-        for t in self.triangles:
-            vertices = [self.translate_point(vertex) for vertex in t.vertices]
-            t.projection = Triangle2D(vertices, t.color)
-            # added because of null pointer problems when to close to an object
-            for v in vertices:
-                if not v:
-                    t.projection = None
-                  
-        min_max_compare = cmp_to_key(self.compare_triangles)
-        self.triangles.sort(key=min_max_compare)
-
-    def compare_triangles(self, t1, t2):
-        if not t1.projection or not t2.projection:
-            return 0
-
-        # r1 = Rectangle(t1.projection)
-        # r2 = Rectangle(t2.projection)
-
-        # if not r1.does_overlap(r2):
-        #    return 0
-
-        dist_t1_max = max([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
-        dist_t1_min = min([calculate_distance_3d(vertex, self.position) for vertex in t1.vertices])
-        dist_t2_max = max([calculate_distance_3d(vertex, self.position) for vertex in t2.vertices])
-        dist_t2_min = min([calculate_distance_3d(vertex, self.position) for vertex in t2.vertices])
-
-        if dist_t1_max > dist_t2_max and dist_t1_min > dist_t2_min:
-            return -1
-        if dist_t2_max > dist_t1_max and dist_t2_min > dist_t1_min:
-            return 1
-        if dist_t1_min >= dist_t2_min and dist_t1_max <= dist_t2_max:
-            return -1
-        if dist_t2_min >= dist_t1_min and dist_t2_max <= dist_t1_max:
-            return 1
-
-        return 0
-
     def pan_right(self):
-        self.pan_x(-1)
+        self.light_source.center.x += PAN_STEP
 
     def pan_left(self):
-        self.pan_x(1)
+        self.light_source.center.x -= PAN_STEP
 
     def pan_up(self):
-        self.pan_y(1)
+        self.light_source.center.y -= PAN_STEP
 
     def pan_down(self):
-        self.pan_y(-1)
+        self.light_source.center.y += PAN_STEP
 
     def pan_forward(self):
-        self.pan_z(1)
+        self.light_source.center.z += PAN_STEP
 
     def pan_backward(self):
-        self.pan_z(-1)
+        self.light_source.center.z -= PAN_STEP
 
     def rotate_clockwise(self):
         self.rotate_z(1)

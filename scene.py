@@ -3,28 +3,25 @@ from camera import Camera
 from sphere_parser import SphereParser
 
 INPUT_PATH = 'spheres.txt'
-FPS = 60
 black = 0, 0, 0
 white = 255, 255, 255
-screen_size = 640, 480
+screen_size = 320, 240
 pygame.init()
 
 
 class Scene:
     def __init__(self):
         input_parser = SphereParser(INPUT_PATH)
-        spheres, light_sources = input_parser.parse()
-        self.camera = Camera(screen_size, spheres, light_sources)
+        spheres, light_source = input_parser.parse()
+        self.camera = Camera(screen_size, spheres, light_source)
         self.screen = pygame.display.set_mode(screen_size, pygame.SCALED)
         self.screen.fill(black)
         self.camera_transforms = self.set_camera_transforms()
         self.transforms_to_perform = self.set_transforms_to_perform()
-        self.clock = pygame.time.Clock()
         self.points = self.camera.render()
-        pygame.mouse.set_visible(False)
 
     def run(self):
-        pygame.event.set_grab(True)
+        pygame.event.set_grab(False)
         self.screen.fill(black)
         for event in pygame.event.get():
             self.handle_event(event)
@@ -35,7 +32,10 @@ class Scene:
         for point_color in self.points:
             point, color = point_color
             point = self.translate_to_global(point)
-            self.screen.set_at(point, color)
+            try:
+                self.screen.set_at(point, color)
+            except ValueError:
+                print(color)
 
     def handle_event(self, event):
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -49,7 +49,8 @@ class Scene:
         self.screen.fill(black)
 
     def handle_keydown(self, key):
-        self.camera_transforms[key]()
+        if key in self.camera_transforms:
+            self.camera_transforms[key]()
         self.points = self.camera.render()
 
     def handle_mousewheel(self, amount):
@@ -67,10 +68,10 @@ class Scene:
         return {
             pygame.K_d: self.camera.pan_right,
             pygame.K_a: self.camera.pan_left,
-            pygame.K_UP: self.camera.pan_up,
-            pygame.K_DOWN: self.camera.pan_down,
-            pygame.K_w: self.camera.pan_forward,
-            pygame.K_s: self.camera.pan_backward,
+            pygame.K_UP: self.camera.pan_forward,
+            pygame.K_DOWN: self.camera.pan_backward,
+            pygame.K_w: self.camera.pan_up,
+            pygame.K_s: self.camera.pan_down,
             pygame.K_e: self.camera.rotate_clockwise,
             pygame.K_q: self.camera.rotate_counter_clockwise,
             pygame.K_EQUALS: self.camera.zoom_in,

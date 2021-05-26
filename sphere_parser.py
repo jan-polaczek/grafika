@@ -7,12 +7,12 @@ class SphereParser:
     def __init__(self, path):
         self.path = path
         self.spheres = []
-        self.light_sources = []
+        self.light_source = None
 
     def parse(self):
         with open(self.path, 'r') as file:
             self.handle_file(file)
-        return self.spheres, self.light_sources
+        return self.spheres, self.light_source
 
     def handle_file(self, file):
         for line in file:
@@ -28,6 +28,8 @@ class SphereParser:
             color = arr[4], arr[5], arr[6]
             self.spheres.append(Sphere(center, radius, color))
         else:
-            color = arr[3], arr[4], arr[5]
-            self.light_sources.append(LightSource(center, color))
+            i_a = arr[3], arr[4], arr[5]
+            i_d = arr[6], arr[7], arr[8],
+            i_s = arr[9], arr[10], arr[11]
+            self.light_source = LightSource(center, i_a, i_d, i_s)
 
