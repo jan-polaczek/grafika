@@ -51,12 +51,7 @@ class Camera:
 
     def translate_point_from_raycast(self, point3d):
         pixel, (point, sphere) = point3d
-        sphere_color = sphere.color
-        k_s = sphere_color
-        k_d = sphere_color
-        k_a = sphere_color
-        alpha = 5
-        color = self.phong.apply_phong(point, k_s, k_d, k_a, alpha, sphere)
+        color = self.phong.apply_phong(point, sphere)
         return (pixel[0], pixel[1]), color
 
     def pan_right(self):

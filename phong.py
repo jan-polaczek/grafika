@@ -16,11 +16,15 @@ class Phong:
         self.light_pos_np = None
         self.camera_pos_np = None
 
-    def apply_phong(self, point: np.array, k_s: Tuple[float, float, float], k_d: Tuple[float, float, float], k_a: Tuple[float, float, float], alpha: float, sphere):
+    def apply_phong(self, point: np.array, sphere):
         v = self.get_v(point)
         n = self.get_n(point, sphere)
         l = self.get_l(point)
         r = self.get_r(l, n)
+        k_s = sphere.k_s
+        k_d = sphere.k_d
+        k_a = sphere.k_a
+        alpha = sphere.alpha
         rgb = np.array([
             self.calculate_phong_part(k_s_i, k_d_i, k_a_i, i_s_i, i_d_i, i_a_i, v, n, l, r, alpha)
             for k_s_i, k_d_i, k_a_i, i_s_i, i_d_i, i_a_i
