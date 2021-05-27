@@ -4,13 +4,6 @@ from typing import List, Tuple, Union
 import numpy as np
 
 
-'''
-Źródła:
-http://www.ccs.neu.edu/home/fell/CS4300/Lectures/Ray-TracingFormulas.pdf
-https://github.com/xhacker/raycast/tree/master/raycast
-'''
-
-
 def normalize(v: np.array):
     return v / np.linalg.norm(v)
 
