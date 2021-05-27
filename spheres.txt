@@ -2,8 +2,8 @@ Sphere:
     center: 0 0 40
     radius: 35
     specular: 255 255 255
-    diffuse: 50 255 0
-    ambient: 50 255 0
+    diffuse: 255 0 0
+    ambient: 255 0 0
     alpha: 10
     end
 
@@ -22,8 +22,8 @@ Sphere:
     center: 0 0 40
     radius: 35
     specular: 255 255 255
-    diffuse: 50 255 0
-    ambient: 50 255 0
+    diffuse: 255 0 0
+    ambient: 255 0 0
     alpha: 10
     end
 
